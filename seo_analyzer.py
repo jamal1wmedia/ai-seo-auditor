@@ -72,11 +72,27 @@ def analyze_html(html):
 
     # Images
     images = soup.find_all("img")
+    
+    images_missing_alt = []
+    images_empty_alt = []
 
-    missing_alt = [
-        img for img in images
-        if not img.get("alt")
-    ]
+    for img in images:
+        alt = img.get("alt")
+        src = img.get("src")
+
+        # ALT attribute does not exist
+        if alt is None:
+            images_missing_alt.append({
+                "src": src,
+                "alt": None
+            })
+
+        # ALT attribute exists but is empty
+        elif alt.strip() == "":
+            images_empty_alt.append({
+                "src": src,
+                "alt": ""
+            })
 
     # Links
     links = soup.find_all("a")
@@ -91,7 +107,8 @@ def analyze_html(html):
         "h1_count": len(h1_tags),
         "h2_count": len(h2_tags),
         "image_count": len(images),
-        "images_missing_alt": len(missing_alt),
+        "images_missing_alt": len(images_missing_alt),
+        "images_empty_alt": len(images_empty_alt),
         "link_count": len(links),
     }
 
