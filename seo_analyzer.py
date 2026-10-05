@@ -20,6 +20,52 @@ def analyze_html(html):
         else None
     )
 
+    # Canonical
+    canonical_tag = soup.find(
+        "link",
+        attrs={"rel": "canonical"}
+    )
+
+    canonical_url = (
+        canonical_tag.get("href", "").strip()
+        if canonical_tag
+        else None
+    )
+
+    # Open Graph
+    og_title_tag = soup.find(
+        "meta",
+        attrs={"property": "og:title"}
+    )
+
+    og_description_tag = soup.find(
+        "meta",
+        attrs={"property": "og:description"}
+    )
+
+    og_image_tag = soup.find(
+        "meta",
+        attrs={"property": "og:image"}
+    )
+
+    og_title = (
+        og_title_tag.get("content", "").strip()
+        if og_title_tag
+        else None
+    )
+
+    og_description = (
+        og_description_tag.get("content", "").strip()
+        if og_description_tag
+        else None
+    )
+
+    og_image = (
+        og_image_tag.get("content", "").strip()
+        if og_image_tag
+        else None
+    )
+
     # Headings
     h1_tags = soup.find_all("h1")
     h2_tags = soup.find_all("h2")
@@ -38,6 +84,10 @@ def analyze_html(html):
     return {
         "title": title,
         "meta_description": meta_description,
+        "canonical_url": canonical_url,
+        "og_title": og_title,
+        "og_description": og_description,
+        "og_image": og_image,
         "h1_count": len(h1_tags),
         "h2_count": len(h2_tags),
         "image_count": len(images),
@@ -58,6 +108,24 @@ def find_seo_issues(result):
             "recommendation": "Add a descriptive <title> tag."
         })
 
+    # Title length
+    if result["title"]:
+        title_length = len(result["title"])
+
+        if title_length < 30:
+            issues.append({
+                "severity": "LOW",
+                "issue": f"Title is short ({title_length} characters)",
+                "recommendation": "Consider making the title more descriptive and relevant to the page."
+            })
+
+        elif title_length > 60:
+            issues.append({
+                "severity": "MEDIUM",
+                "issue": f"Title is long ({title_length} characters)",
+                "recommendation": "Consider shortening the title so the main topic is clear and concise."
+            })
+
     # Meta description
     if not result["meta_description"]:
         issues.append({
@@ -65,6 +133,24 @@ def find_seo_issues(result):
             "issue": "Missing meta description",
             "recommendation": "Add a unique meta description."
         })
+
+    # Meta description length
+    if result["meta_description"]:
+        meta_length = len(result["meta_description"])
+
+        if meta_length < 70:
+            issues.append({
+                "severity": "LOW",
+                "issue": f"Meta description is short ({meta_length} characters)",
+                "recommendation": "Consider adding more useful information that clearly describes the page."
+            })
+
+        elif meta_length > 160:
+            issues.append({
+                "severity": "MEDIUM",
+                "issue": f"Meta description is long ({meta_length} characters)",
+                "recommendation": "Consider shortening the meta description so the main message is concise."
+            })
 
     # H1
     if result["h1_count"] == 0:
@@ -95,6 +181,36 @@ def find_seo_issues(result):
             "severity": "MEDIUM",
             "issue": f"{result['images_missing_alt']} images missing ALT text",
             "recommendation": "Add meaningful ALT text to relevant images."
+        })
+
+    # Canonical
+    if not result["canonical_url"]:
+        issues.append({
+            "severity": "MEDIUM",
+            "issue": "Missing canonical URL",
+            "recommendation": "Add a canonical URL to indicate the preferred version of the page."
+        })
+
+    # Open Graph
+    if not result["og_title"]:
+        issues.append({
+            "severity": "LOW",
+            "issue": "Missing Open Graph title",
+            "recommendation": "Add an og:title tag for better social sharing."
+        })
+
+    if not result["og_description"]:
+        issues.append({
+            "severity": "LOW",
+            "issue": "Missing Open Graph description",
+            "recommendation": "Add an og:description tag for better social sharing previews."
+        })
+
+    if not result["og_image"]:
+        issues.append({
+            "severity": "LOW",
+            "issue": "Missing Open Graph image",
+            "recommendation": "Add an og:image tag with a suitable social sharing image."
         })
 
     return issues

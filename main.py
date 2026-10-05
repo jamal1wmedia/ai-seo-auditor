@@ -13,6 +13,13 @@ result = analyze_html(html)
 
 issues = find_seo_issues(result)
 
+if not url.startswith("https://"):
+    issues.append({
+        "severity": "HIGH",
+        "issue": "Website is not using HTTPS",
+        "recommendation": "Configure HTTPS and redirect HTTP traffic to the HTTPS version."
+    })
+
 
 print("\n===== SEO AUDIT =====")
 
