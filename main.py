@@ -1,7 +1,7 @@
 from crawler import fetch_page
 from seo_analyzer import analyze_html, find_seo_issues
 from ai_analyzer import analyze_with_ai
-from pagespeed_analyzer import analyze_pagespeed
+from pagespeed_analyzer import analyze_pagespeed, find_pagespeed_issues
 
 
 url = input("Enter website URL: ")
@@ -37,6 +37,8 @@ if not url.startswith("https://"):
 print("Running PageSpeed analysis...")
 
 pagespeed = analyze_pagespeed(url)
+
+pagespeed_issues = find_pagespeed_issues(pagespeed)
 
 # =========================
 # 4. TECHNICAL SEO REPORT
@@ -79,6 +81,15 @@ print(f"LCP: {pagespeed['lcp']}")
 print(f"CLS: {pagespeed['cls']}")
 print(f"Speed Index: {pagespeed['speed_index']}")
 
+print("\n===== PAGESPEED ISSUES =====")
+
+if not pagespeed_issues:
+    print("No PageSpeed issues found!")
+else:
+    for issue in pagespeed_issues:
+        print(f"\n[{issue['severity']}] {issue['issue']}")
+        print(f"Recommendation: {issue['recommendation']}")
+
 # =========================
 # 6. AI SEO ANALYSIS
 # =========================
@@ -87,6 +98,8 @@ print("\n================================")
 print("          AI ANALYSIS")
 print("================================")
 
-ai_result = analyze_with_ai(issues, pagespeed)
+all_issues = issues + pagespeed_issues
+
+ai_result = analyze_with_ai(all_issues, pagespeed)
 
 print(ai_result)
